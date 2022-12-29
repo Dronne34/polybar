@@ -4,9 +4,9 @@ print_bytes() {
     if [ "$1" -eq 0 ] || [ "$1" -lt 1000 ]; then
         bytes="0 kB/s"
     elif [ "$1" -lt 1000000 ]; then
-        bytes="$(echo "scale=0;$1/1000" | bc -l ) kB/s"
+        bytes="$(echo "$1/1000" | bc -l | LANG=C xargs printf "%.f\n") kB/s"
     else
-        bytes="$(echo "scale=1;$1/1000000" | bc -l ) MB/s"
+        bytes="$(echo "$1/1000000" | bc -l | LANG=C xargs printf "%.1f\n") MB/s"
     fi
 
     echo "$bytes"
@@ -16,17 +16,17 @@ print_bit() {
     if [ "$1" -eq 0 ] || [ "$1" -lt 10 ]; then
         bit="0 B"
     elif [ "$1" -lt 100 ]; then
-        bit="$(echo "scale=0;$1*8" | bc -l ) B"
+        bit="$(echo "$1*8" | bc -l | LANG=C xargs printf "%.f\n") B"
     elif [ "$1" -lt 100000 ]; then
-        bit="$(echo "scale=0;$1*8/1000" | bc -l ) K"
+        bit="$(echo "$1*8/1000" | bc -l | LANG=C xargs printf "%.f\n") K"
     else
-        bit="$(echo "scale=1;$1*8/1000000" | bc -l ) M"
+        bit="$(echo "$1*8/1000000" | bc -l | LANG=C xargs printf "%.1f\n") M"
     fi
 
     echo "$bit"
 }
 
-INTERVAL=1
+INTERVAL=10
 INTERFACES="wlan0"
 
 declare -A bytes
@@ -54,8 +54,8 @@ while true; do
         bytes[past_tx_$interface]=${bytes[now_tx_$interface]}
     done
 
-    #echo "Download: $(print_bytes $down) / Upload: $(print_bytes $up)"
-    echo "Dw: $(print_bit $down) / UP: $(print_bit $up)"
+    echo "Download: $(print_bytes $down) / Upload: $(print_bytes $up)"
+    # echo "Download: $(print_bit $down) / Upload: $(print_bit $up)"
 
     sleep $INTERVAL
 done
